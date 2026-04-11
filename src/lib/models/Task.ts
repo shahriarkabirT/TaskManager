@@ -8,6 +8,7 @@ export interface ITask extends Document {
   priority: 1 | 2 | 3; // 1=high, 2=medium, 3=low
   clientName?: string;
   projectName?: string;
+  userId: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -29,9 +30,13 @@ const TaskSchema = new Schema<ITask>(
     },
     clientName: { type: String, default: "" },
     projectName: { type: String, default: "" },
+    userId: { type: String, required: true, index: true },
   },
   { timestamps: true }
 );
+
+// Compound index for efficient per-user date queries
+TaskSchema.index({ userId: 1, date: 1 });
 
 // Prevent model recompilation in dev mode
 const Task = mongoose.models.Task || mongoose.model<ITask>("Task", TaskSchema);

@@ -2,6 +2,7 @@
 
 import { connectDB } from "@/lib/mongodb";
 import Task from "@/lib/models/Task";
+import { requireSession } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 
 export interface TaskData {
@@ -14,8 +15,14 @@ export interface TaskData {
   projectName?: string;
 }
 
+async function getUserId() {
+  const session = await requireSession();
+  return session.userId;
+}
+
 export async function createTask(data: TaskData) {
   try {
+    const userId = await getUserId();
     await connectDB();
     const task = await Task.create({
       title: data.title,
@@ -25,6 +32,7 @@ export async function createTask(data: TaskData) {
       priority: data.priority || 2,
       clientName: data.clientName || "",
       projectName: data.projectName || "",
+      userId,
     });
     revalidatePath("/dashboard");
     return { success: true, task: JSON.parse(JSON.stringify(task)) };
@@ -36,12 +44,19 @@ export async function createTask(data: TaskData) {
 
 export async function updateTask(id: string, data: Partial<TaskData>) {
   try {
+    const userId = await getUserId();
     await connectDB();
     const updateData: Record<string, unknown> = { ...data };
     if (data.date) {
       updateData.date = new Date(data.date);
     }
-    const task = await Task.findByIdAndUpdate(id, updateData, { new: true });
+    // Only allow updating own tasks
+    const task = await Task.findOneAndUpdate(
+      { _id: id, userId },
+      updateData,
+      { new: true }
+    );
+    if (!task) return { success: false, error: "Task not found" };
     revalidatePath("/dashboard");
     return { success: true, task: JSON.parse(JSON.stringify(task)) };
   } catch (error) {
@@ -52,8 +67,14 @@ export async function updateTask(id: string, data: Partial<TaskData>) {
 
 export async function updateTaskStatus(id: string, status: "PENDING" | "IN_PROGRESS" | "DONE") {
   try {
+    const userId = await getUserId();
     await connectDB();
-    const task = await Task.findByIdAndUpdate(id, { status }, { new: true });
+    const task = await Task.findOneAndUpdate(
+      { _id: id, userId },
+      { status },
+      { new: true }
+    );
+    if (!task) return { success: false, error: "Task not found" };
     revalidatePath("/dashboard");
     return { success: true, task: JSON.parse(JSON.stringify(task)) };
   } catch (error) {
@@ -64,8 +85,10 @@ export async function updateTaskStatus(id: string, status: "PENDING" | "IN_PROGR
 
 export async function deleteTask(id: string) {
   try {
+    const userId = await getUserId();
     await connectDB();
-    await Task.findByIdAndDelete(id);
+    const result = await Task.findOneAndDelete({ _id: id, userId });
+    if (!result) return { success: false, error: "Task not found" };
     revalidatePath("/dashboard");
     return { success: true };
   } catch (error) {
@@ -80,8 +103,9 @@ export async function getTasks(filter?: {
   status?: string;
 }) {
   try {
+    const userId = await getUserId();
     await connectDB();
-    const query: Record<string, unknown> = {};
+    const query: Record<string, unknown> = { userId };
 
     if (filter?.startDate && filter?.endDate) {
       query.date = {
@@ -130,11 +154,13 @@ export async function getUpcomingTasks() {
 
 export async function getOverdueTasks() {
   try {
+    const userId = await getUserId();
     await connectDB();
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
     const tasks = await Task.find({
+      userId,
       date: { $lt: today },
       status: { $ne: "DONE" },
     })
@@ -150,6 +176,7 @@ export async function getOverdueTasks() {
 
 export async function getTaskStats() {
   try {
+    const userId = await getUserId();
     await connectDB();
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -167,18 +194,22 @@ export async function getTaskStats() {
     const [todayCount, upcomingCount, overdueCount, completedThisWeek] =
       await Promise.all([
         Task.countDocuments({
+          userId,
           date: { $gte: today, $lte: endOfToday },
           status: { $ne: "DONE" },
         }),
         Task.countDocuments({
+          userId,
           date: { $gt: endOfToday, $lte: endOfWeek },
           status: { $ne: "DONE" },
         }),
         Task.countDocuments({
+          userId,
           date: { $lt: today },
           status: { $ne: "DONE" },
         }),
         Task.countDocuments({
+          userId,
           status: "DONE",
           updatedAt: { $gte: startOfWeek },
         }),
@@ -191,29 +222,9 @@ export async function getTaskStats() {
   }
 }
 
-export async function getAllTasksFor30Days() {
-  const start = new Date();
-  start.setHours(0, 0, 0, 0);
-  const end = new Date();
-  end.setDate(end.getDate() + 30);
-  end.setHours(23, 59, 59, 999);
-
-  try {
-    await connectDB();
-    const tasks = await Task.find({
-      date: { $gte: start, $lte: end },
-    })
-      .sort({ date: 1, priority: 1 })
-      .lean();
-    return JSON.parse(JSON.stringify(tasks));
-  } catch (error) {
-    console.error("Get 30-day tasks error:", error);
-    return [];
-  }
-}
-
 export async function getTaskCountsByDate() {
   try {
+    const userId = await getUserId();
     await connectDB();
     const start = new Date();
     start.setHours(0, 0, 0, 0);
@@ -222,6 +233,7 @@ export async function getTaskCountsByDate() {
     end.setHours(23, 59, 59, 999);
 
     const tasks = await Task.find({
+      userId,
       date: { $gte: start, $lte: end },
     })
       .select("date status")

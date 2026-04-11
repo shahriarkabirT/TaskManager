@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Sidebar from "@/components/Sidebar";
 import { getTaskStats } from "@/actions/task";
+import { getSessionInfo } from "@/actions/user";
 
 export default function DashboardLayout({
   children,
@@ -16,18 +17,28 @@ export default function DashboardLayout({
     overdueCount: 0,
     completedThisWeek: 0,
   });
+  const [userName, setUserName] = useState("");
   const isMounted = useRef(true);
 
   useEffect(() => {
     isMounted.current = true;
 
-    async function fetchStats() {
-      const s = await getTaskStats();
-      if (isMounted.current) setStats(s);
+    async function fetchData() {
+      const [s, user] = await Promise.all([
+        getTaskStats(),
+        getSessionInfo(),
+      ]);
+      if (isMounted.current) {
+        setStats(s);
+        setUserName(user.name);
+      }
     }
 
-    fetchStats();
-    const interval = setInterval(fetchStats, 30000);
+    fetchData();
+    const interval = setInterval(async () => {
+      const s = await getTaskStats();
+      if (isMounted.current) setStats(s);
+    }, 30000);
 
     return () => {
       isMounted.current = false;
@@ -47,6 +58,7 @@ export default function DashboardLayout({
 
       <Sidebar
         stats={stats}
+        userName={userName}
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
       />

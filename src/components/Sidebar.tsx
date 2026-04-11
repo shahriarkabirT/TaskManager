@@ -11,11 +11,12 @@ interface SidebarProps {
     overdueCount: number;
     completedThisWeek: number;
   };
+  userName: string;
   isOpen: boolean;
   onClose: () => void;
 }
 
-export default function Sidebar({ stats, isOpen, onClose }: SidebarProps) {
+export default function Sidebar({ stats, userName, isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
 
   const navItems = [
@@ -54,6 +55,14 @@ export default function Sidebar({ stats, isOpen, onClose }: SidebarProps) {
     return pathname.startsWith(href);
   }
 
+  // Get initials for avatar
+  const initials = userName
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+
   return (
     <>
       <div
@@ -65,6 +74,57 @@ export default function Sidebar({ stats, isOpen, onClose }: SidebarProps) {
           <div className="sidebar-logo">
             <span className="sidebar-logo-icon">📋</span>
             Task Organizer
+          </div>
+        </div>
+
+        {/* User Info */}
+        <div
+          style={{
+            padding: "16px 16px 12px",
+            borderBottom: "1px solid var(--border-color)",
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+          }}
+        >
+          <div
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: 10,
+              background: "var(--accent-gradient)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: "0.8rem",
+              fontWeight: 700,
+              color: "white",
+              flexShrink: 0,
+            }}
+          >
+            {initials}
+          </div>
+          <div style={{ minWidth: 0 }}>
+            <div
+              style={{
+                fontSize: "0.85rem",
+                fontWeight: 600,
+                color: "var(--text-primary)",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {userName}
+            </div>
+            <div
+              style={{
+                fontSize: "0.7rem",
+                color: "var(--text-muted)",
+              }}
+            >
+              Freelancer
+            </div>
           </div>
         </div>
 

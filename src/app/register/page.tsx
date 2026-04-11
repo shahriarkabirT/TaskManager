@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { loginAction } from "@/actions/auth";
+import { registerAction } from "@/actions/auth";
 import Link from "next/link";
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -16,7 +16,7 @@ export default function LoginPage() {
     const formData = new FormData(e.currentTarget);
 
     try {
-      const result = await loginAction(formData);
+      const result = await registerAction(formData);
       if (result?.error) {
         setError(result.error);
         setLoading(false);
@@ -49,12 +49,31 @@ export default function LoginPage() {
             📋
           </div>
         </div>
-        <h1 className="login-title">Task Organizer</h1>
-        <p className="login-subtitle">Sign in to your dashboard</p>
+        <h1 className="login-title">Create Account</h1>
+        <p className="login-subtitle">
+          Set up your task organizer in seconds
+        </p>
 
         {error && <div className="error-message">{error}</div>}
 
         <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label htmlFor="name" className="form-label">
+              Full Name
+            </label>
+            <input
+              id="name"
+              name="name"
+              type="text"
+              className="form-input"
+              placeholder="e.g. Shahriar Kabir"
+              required
+              autoComplete="name"
+              minLength={2}
+              maxLength={50}
+            />
+          </div>
+
           <div className="form-group">
             <label htmlFor="username" className="form-label">
               Username
@@ -64,10 +83,24 @@ export default function LoginPage() {
               name="username"
               type="text"
               className="form-input"
-              placeholder="Enter your username"
+              placeholder="e.g. shahriar"
               required
               autoComplete="username"
+              minLength={3}
+              maxLength={30}
+              pattern="[a-zA-Z0-9_]+"
+              title="Only letters, numbers, and underscores"
             />
+            <span
+              style={{
+                fontSize: "0.7rem",
+                color: "var(--text-muted)",
+                marginTop: 4,
+                display: "block",
+              }}
+            >
+              Letters, numbers, and underscores only
+            </span>
           </div>
 
           <div className="form-group">
@@ -79,9 +112,26 @@ export default function LoginPage() {
               name="password"
               type="password"
               className="form-input"
-              placeholder="Enter your password"
+              placeholder="At least 6 characters"
               required
-              autoComplete="current-password"
+              autoComplete="new-password"
+              minLength={6}
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="confirmPassword" className="form-label">
+              Confirm Password
+            </label>
+            <input
+              id="confirmPassword"
+              name="confirmPassword"
+              type="password"
+              className="form-input"
+              placeholder="Re-enter your password"
+              required
+              autoComplete="new-password"
+              minLength={6}
             />
           </div>
 
@@ -91,7 +141,7 @@ export default function LoginPage() {
             disabled={loading}
             style={{ marginTop: 8 }}
           >
-            {loading ? "Signing in..." : "Sign In"}
+            {loading ? "Creating account..." : "Create Account"}
           </button>
         </form>
 
@@ -103,16 +153,16 @@ export default function LoginPage() {
             color: "var(--text-muted)",
           }}
         >
-          Don&apos;t have an account?{" "}
+          Already have an account?{" "}
           <Link
-            href="/register"
+            href="/login"
             style={{
               color: "var(--accent-violet)",
               textDecoration: "none",
               fontWeight: 600,
             }}
           >
-            Create one
+            Sign in
           </Link>
         </p>
       </div>
