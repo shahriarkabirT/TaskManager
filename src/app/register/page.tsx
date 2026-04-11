@@ -37,16 +37,14 @@ export default function RegisterPage() {
             style={{
               width: 56,
               height: 56,
-              background: "linear-gradient(135deg, #6366f1, #8b5cf6, #a855f7)",
               borderRadius: 16,
               display: "inline-flex",
               alignItems: "center",
               justifyContent: "center",
-              fontSize: "1.5rem",
               marginBottom: 16,
             }}
           >
-            📋
+            <img src="/logo.png" alt="Task Organizer Logo" style={{ width: '100%', height: '100%', borderRadius: 16, objectFit: 'cover' }} />
           </div>
         </div>
         <h1 className="login-title">Create Account</h1>

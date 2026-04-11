@@ -84,7 +84,9 @@ export default function Sidebar({ stats, userName, isOpen, onClose }: SidebarPro
       <aside className={`sidebar ${isOpen ? "open" : ""}`}>
         <div className="sidebar-header">
           <div className="sidebar-logo">
-            <span className="sidebar-logo-icon">📋</span>
+            <span className="sidebar-logo-icon" style={{ background: 'transparent', padding: 0 }}>
+              <img src="/logo.png" alt="Task Organizer Logo" style={{ width: '100%', height: '100%', borderRadius: 10, objectFit: 'cover' }} />
+            </span>
             Task Organizer
           </div>
         </div>
