@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { createTask, updateTask } from "@/actions/task";
+import { getClients } from "@/actions/client";
+import { getProjects } from "@/actions/project";
 
 interface TaskFormData {
   _id?: string;
@@ -10,6 +12,8 @@ interface TaskFormData {
   date: string;
   status?: "PENDING" | "IN_PROGRESS" | "DONE";
   priority?: 1 | 2 | 3;
+  clientId?: string;
+  projectId?: string;
   clientName?: string;
   projectName?: string;
 }
@@ -36,6 +40,8 @@ export default function AddTaskModal({
     date: defaultDate || new Date().toISOString().split("T")[0],
     status: "PENDING",
     priority: 2,
+    clientId: "",
+    projectId: "",
     clientName: "",
     projectName: "",
   });
@@ -55,11 +61,23 @@ export default function AddTaskModal({
         date: defaultDate || new Date().toISOString().split("T")[0],
         status: "PENDING",
         priority: 2,
+        clientId: "",
+        projectId: "",
         clientName: "",
         projectName: "",
       });
     }
   }, [editTask, defaultDate, isOpen]);
+
+  const [clients, setClients] = useState<{_id: string, name: string, status: string}[]>([]);
+  const [projects, setProjects] = useState<{_id: string, name: string, status: string, clientId?: {_id: string, name: string}}[]>([]);
+
+  useEffect(() => {
+    if (isOpen) {
+      getClients().then(setClients);
+      getProjects().then(setProjects);
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -76,8 +94,10 @@ export default function AddTaskModal({
           date: form.date,
           status: form.status,
           priority: form.priority,
-          clientName: form.clientName,
-          projectName: form.projectName,
+          clientId: form.clientId,
+          projectId: form.projectId,
+          clientName: form.clientId ? clients.find(c => c._id === form.clientId)?.name : form.clientName,
+          projectName: form.projectId ? projects.find(p => p._id === form.projectId)?.name : form.projectName,
         });
       } else {
         await createTask({
@@ -86,8 +106,10 @@ export default function AddTaskModal({
           date: form.date,
           status: form.status,
           priority: form.priority,
-          clientName: form.clientName,
-          projectName: form.projectName,
+          clientId: form.clientId,
+          projectId: form.projectId,
+          clientName: form.clientId ? clients.find(c => c._id === form.clientId)?.name : form.clientName,
+          projectName: form.projectId ? projects.find(p => p._id === form.projectId)?.name : form.projectName,
         });
       }
       onSuccess();
@@ -194,29 +216,46 @@ export default function AddTaskModal({
 
             <div className="form-row">
               <div className="form-group">
-                <label className="form-label">Client Name</label>
-                <input
-                  className="form-input"
-                  type="text"
-                  placeholder="e.g. John's Agency"
-                  value={form.clientName || ""}
+                <label className="form-label">Client</label>
+                <select
+                  className="form-select"
+                  value={form.clientId || ""}
                   onChange={(e) =>
-                    setForm({ ...form, clientName: e.target.value })
+                    setForm({ ...form, clientId: e.target.value, projectId: "" })
                   }
-                />
+                >
+                  <option value="">-- No Client --</option>
+                  {clients.filter(c => c.status === "ACTIVE" || c._id === editTask?.clientId).map((c) => (
+                    <option key={c._id} value={c._id}>{c.name} {c.status === "INACTIVE" ? "(Inactive)" : ""}</option>
+                  ))}
+                  {/* Keep old string as fallback for legacy tasks if not found */}
+                  {editTask?.clientName && !editTask?.clientId && (
+                    <option value="" disabled>Legacy: {editTask.clientName}</option>
+                  )}
+                </select>
               </div>
 
               <div className="form-group">
-                <label className="form-label">Project Name</label>
-                <input
-                  className="form-input"
-                  type="text"
-                  placeholder="e.g. Website Redesign"
-                  value={form.projectName || ""}
+                <label className="form-label">Project</label>
+                <select
+                  className="form-select"
+                  value={form.projectId || ""}
                   onChange={(e) =>
-                    setForm({ ...form, projectName: e.target.value })
+                    setForm({ ...form, projectId: e.target.value })
                   }
-                />
+                >
+                  <option value="">-- No Project --</option>
+                  {projects
+                    .filter(p => !form.clientId || p.clientId?._id === form.clientId) // Only show projects for selected client
+                    .filter(p => p.status === "ACTIVE" || p._id === editTask?.projectId)
+                    .map((p) => (
+                    <option key={p._id} value={p._id}>{p.name} {p.status === "INACTIVE" ? "(Inactive)" : ""}</option>
+                  ))}
+                  {/* Keep old string as fallback for legacy tasks if not found */}
+                  {editTask?.projectName && !editTask?.projectId && (
+                    <option value="" disabled>Legacy: {editTask.projectName}</option>
+                  )}
+                </select>
               </div>
             </div>
           </div>

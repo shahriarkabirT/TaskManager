@@ -6,6 +6,8 @@ export interface ITask extends Document {
   date: Date;
   status: "PENDING" | "IN_PROGRESS" | "DONE";
   priority: 1 | 2 | 3; // 1=high, 2=medium, 3=low
+  clientId?: mongoose.Types.ObjectId;
+  projectId?: mongoose.Types.ObjectId;
   clientName?: string;
   projectName?: string;
   userId: string;
@@ -28,6 +30,8 @@ const TaskSchema = new Schema<ITask>(
       enum: [1, 2, 3],
       default: 2,
     },
+    clientId: { type: Schema.Types.ObjectId, ref: 'Client' },
+    projectId: { type: Schema.Types.ObjectId, ref: 'Project' },
     clientName: { type: String, default: "" },
     projectName: { type: String, default: "" },
     userId: { type: String, required: true, index: true },

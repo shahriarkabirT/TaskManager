@@ -11,6 +11,8 @@ export interface TaskData {
   date: string;
   status?: "PENDING" | "IN_PROGRESS" | "DONE";
   priority?: 1 | 2 | 3;
+  clientId?: string;
+  projectId?: string;
   clientName?: string;
   projectName?: string;
 }
@@ -30,6 +32,8 @@ export async function createTask(data: TaskData) {
       date: new Date(data.date),
       status: data.status || "PENDING",
       priority: data.priority || 2,
+      clientId: data.clientId || undefined,
+      projectId: data.projectId || undefined,
       clientName: data.clientName || "",
       projectName: data.projectName || "",
       userId,

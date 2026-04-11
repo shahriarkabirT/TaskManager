@@ -48,6 +48,18 @@ export default function Sidebar({ stats, userName, isOpen, onClose }: SidebarPro
       badge: stats.overdueCount > 0 ? stats.overdueCount : null,
       badgeClass: "overdue",
     },
+    {
+      href: "/dashboard/clients",
+      label: "Clients",
+      icon: "👥",
+      badge: null,
+    },
+    {
+      href: "/dashboard/projects",
+      label: "Projects",
+      icon: "📁",
+      badge: null,
+    },
   ];
 
   function isActive(href: string, exact?: boolean) {
