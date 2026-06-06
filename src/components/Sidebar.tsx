@@ -60,6 +60,12 @@ export default function Sidebar({ stats, userName, isOpen, onClose }: SidebarPro
       icon: "📁",
       badge: null,
     },
+    {
+      href: "/dashboard/time-tracker",
+      label: "Time Tracker",
+      icon: "⏱",
+      badge: null,
+    },
   ];
 
   function isActive(href: string, exact?: boolean) {
