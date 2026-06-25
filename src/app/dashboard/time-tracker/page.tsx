@@ -53,15 +53,6 @@ function formatTime(iso: string): string {
   return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
-function formatHours(hours: number): string {
-  if (hours < 0.01) return "0h";
-  const h = Math.floor(hours);
-  const m = Math.round((hours - h) * 60);
-  if (h === 0) return `${m}m`;
-  if (m === 0) return `${h}h`;
-  return `${h}h ${m}m`;
-}
-
 function RenderHours({ hours }: { hours: number }) {
   if (hours < 0.01) {
     return (

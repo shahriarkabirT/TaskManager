@@ -56,7 +56,7 @@ export async function updateTodo(
     const userId = await getUserId();
     await connectDB();
 
-    const updateData: Record<string, any> = {};
+    const updateData: { text?: string; completed?: boolean; deadline?: Date | null } = {};
     if (data.text !== undefined) updateData.text = data.text;
     if (data.completed !== undefined) updateData.completed = data.completed;
     if (data.deadline !== undefined) {
