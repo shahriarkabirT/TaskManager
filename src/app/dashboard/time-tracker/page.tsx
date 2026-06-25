@@ -62,6 +62,41 @@ function formatHours(hours: number): string {
   return `${h}h ${m}m`;
 }
 
+function RenderHours({ hours }: { hours: number }) {
+  if (hours < 0.01) {
+    return (
+      <>
+        0<span className="stat-unit">h</span>
+      </>
+    );
+  }
+  const h = Math.floor(hours);
+  const m = Math.round((hours - h) * 60);
+  if (h === 0) {
+    return (
+      <>
+        {m}
+        <span className="stat-unit">m</span>
+      </>
+    );
+  }
+  if (m === 0) {
+    return (
+      <>
+        {h}
+        <span className="stat-unit">h</span>
+      </>
+    );
+  }
+  return (
+    <>
+      {h}
+      <span className="stat-unit">h</span> {m}
+      <span className="stat-unit">m</span>
+    </>
+  );
+}
+
 /** Calculate elapsed working ms for a live session (excluding breaks) */
 function calcLiveElapsed(session: SessionData): number {
   const now = Date.now();
@@ -234,12 +269,12 @@ export default function TimeTrackerPage() {
         <div className="stats-grid tt-stats-grid">
           <div className="stat-card today">
             <div className="stat-icon">⏱</div>
-            <div className="stat-value">{formatHours(stats.todayHours)}</div>
+            <div className="stat-value"><RenderHours hours={stats.todayHours} /></div>
             <div className="stat-label">Today&apos;s Hours</div>
           </div>
           <div className="stat-card upcoming">
             <div className="stat-icon">📊</div>
-            <div className="stat-value">{formatHours(stats.weekHours)}</div>
+            <div className="stat-value"><RenderHours hours={stats.weekHours} /></div>
             <div className="stat-label">This Week</div>
           </div>
           <div className="stat-card completed">

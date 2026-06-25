@@ -66,6 +66,12 @@ export default function Sidebar({ stats, userName, isOpen, onClose }: SidebarPro
       icon: "⏱",
       badge: null,
     },
+    {
+      href: "/dashboard/todo",
+      label: "To-Do List",
+      icon: "☑️",
+      badge: null,
+    },
   ];
 
   function isActive(href: string, exact?: boolean) {
